@@ -71,3 +71,50 @@ ressources de mon poste, et il marche même si mon runner est éteint.
   `if: always()`.
 - Les fichiers du workspace (`work/`), les images et conteneurs Docker : chaque job refait un `checkout` propre, avec
   `persist-credentials: false` pour ne pas laisser le jeton Git dans `.git/config`.
+
+## Partie C. Rollback et Dependabot
+
+### Question C.1 : comment savoir qu'un nouveau SHA proposé par Dependabot est légitime ?
+
+Honnêtement, on ne peut pas en être sûr à 100 %. Ce que je ferais : aller voir sur le dépôt de l'action que le SHA
+correspond bien au tag de la release (et si possible que le tag est signé), lire vite fait les release notes pour voir
+si rien de bizarre n'a changé, et surtout ne pas fusionner tout de suite, attendre quelques jours. Si l'action a été
+piratée (comme tj-actions en 2025), ça finit souvent par se savoir rapidement. Les releases immuables de GitHub
+aident aussi, puisqu'un tag ne peut plus être déplacé après coup.
+
+### Question C.5 : pourquoi laisser le job rouge alors que le service est rétabli ?
+
+J'ai forcé `c945a6e` en prod : le smoke test a planté, le rollback est revenu tout seul sur `4d0d736` en quelques
+secondes, mais le job est resté rouge. Et c'est voulu. Pour moi, un job vert voudrait dire « tout s'est bien passé »,
+alors que la prod a quand même été cassée un moment. Si c'est vert, personne ne regarde, et on ne cherche jamais
+pourquoi c'est arrivé. Rouge, ça oblige à aller voir, à comprendre, et à corriger la cause (le post-mortem du jour 4).
+
+## Débrief
+
+### Où passe le temps du lead time, et le déploiement continu ?
+
+Sur mes 2 min 37, presque une minute, c'est moi qui n'ai pas encore cliqué sur « approuver ». Le reste, c'est surtout
+le build et le scan des images, puis le déploiement sur le staging. Et en vrai, dans une équipe, le gros du temps
+serait plutôt dans la revue de PR, avant le merge, donc ça ne se voit pas dans ce chiffre. Passer au déploiement
+continu enlèverait l'attente de l'approbation, mais ça a un coût : il faut des tests assez solides pour leur faire
+confiance, un monitoring qui alerte vite, et accepter que plus personne ne vérifie avant la prod.
+
+### Les métriques DORA
+
+Le pipeline aide directement sur la fréquence de déploiement et le lead time, puisque tout est automatique depuis le
+merge. Il aide aussi le temps de restauration : un rollback par tag prend une ou deux minutes, et même quelques secondes
+avec le rollback automatique, comme on l'a vu en C.5. Avec le monitoring du jour 4, on mesurera surtout ce temps de
+restauration (combien de temps entre le moment où ça casse et le moment où c'est réparé), et un peu le taux d'échec des
+changements.
+
+### Qu'est-ce qui est « sécurité » dans ce pipeline ?
+
+Pas mal de choses en fait :
+- le scan Trivy, qui bloque une image avec une faille critique avant qu'elle soit publiée ;
+- `permissions: {}` puis juste les droits nécessaires job par job ;
+- les actions épinglées par SHA plutôt que par tag ;
+- le tag de rollback validé, et les inputs passés par `env` pour éviter l'injection ;
+- les secrets dans les `.env` du serveur (en 600) et pas dans Git, avec gitleaks en pre-commit pour être sûr ;
+- le `docker logout` à la fin, pour ne rien laisser traîner sur le runner ;
+- l'approbation obligatoire et la restriction à `main` pour l'environment `production` ;
+- Dependabot pour garder les dépendances et les actions à jour.
