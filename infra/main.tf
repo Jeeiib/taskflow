@@ -21,7 +21,7 @@ resource "docker_volume" "pgdata" {
 }
 
 resource "docker_image" "db" {
-  name         = "docker.io/library/postgres:16-alpine"
+  name         = "docker.io/library/postgres:16-alpine@sha256:1d5b02d3a9941fbd52437db4107f8c52d6297dac553ca1e5c299ebb3756b4857"
   keep_locally = true
 }
 
