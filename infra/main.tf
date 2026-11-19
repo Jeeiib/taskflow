@@ -14,6 +14,10 @@ resource "docker_network" "this" {
 
 resource "docker_volume" "pgdata" {
   name = "${local.prefix}-pgdata"
+
+  lifecycle {
+    ignore_changes = [labels]
+  }
 }
 
 resource "docker_image" "db" {
