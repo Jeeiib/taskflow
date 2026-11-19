@@ -176,7 +176,7 @@ la disponibilité (sonde) et les courbes de trafic qui s'arrêtent net.
 
 | Action | Type | Issue | Statut |
 | --- | --- | --- | --- |
-| L'API refuse de démarrer en production si `DATABASE_URL` est absente, avec un message explicite (test dans `tests/config.test.js`) | prévention | [#25](https://github.com/Jeeiib/taskflow/issues/25) | à faire |
+| L'API refuse de démarrer en staging et en production si `DATABASE_URL` est absente, avec un message explicite (test dans `tests/config.test.js`) | prévention | [#25](https://github.com/Jeeiib/taskflow/issues/25) | fait |
 | `deploy.sh` compare les noms de variables du `.env` à `.env.example` et s'arrête s'il en manque une | prévention | à créer | à faire |
 | Panneau Grafana des erreurs vues **par l'utilisateur** (`probe_http_status_code` de la sonde) à côté des 5xx de l'API | détection | à créer | à faire |
 | Commande de recréation de l'API avec le tag de `.deployed_tag` dans la méthode de diagnostic | processus | - | fait (ce document) |
