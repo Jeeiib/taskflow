@@ -100,7 +100,7 @@ resource "docker_container" "api" {
 resource "docker_container" "front" {
   name    = "${local.prefix}-front"
   image   = docker_image.front.image_id
-  restart = "unless-stopped"
+  restart = "always"
 
   ports {
     internal = 80
