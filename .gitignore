@@ -24,3 +24,11 @@ backups/
 *.pem
 *.key
 *.crt
+
+# OpenTofu : le state contient des secrets, jamais dans Git
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+terraform.tfvars

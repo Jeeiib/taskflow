@@ -1,0 +1,3 @@
+ghcr_owner = "jeeiib"
+image_tag  = "latest"
+front_port = 8081
