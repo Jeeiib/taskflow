@@ -11,6 +11,38 @@ describe('readConfig', () => {
     });
   });
 
+  describe('en production', () => {
+    it('refuse de démarrer sans DATABASE_URL', () => {
+      expect(() => readConfig({ APP_ENV: 'production' })).toThrow(
+        /DATABASE_URL manquante en production/,
+      );
+    });
+
+    it('refuse la coquille DATABASE_UR (incident n° 1)', () => {
+      expect(() =>
+        readConfig({ APP_ENV: 'production', DATABASE_UR: 'postgres://x@db/x' }),
+      ).toThrow(/DATABASE_URL/);
+    });
+
+    it('refuse une DATABASE_URL vide', () => {
+      expect(() =>
+        readConfig({ APP_ENV: 'production', DATABASE_URL: '' }),
+      ).toThrow(/DATABASE_URL/);
+    });
+  });
+
+  it('refuse aussi de démarrer sans DATABASE_URL en staging', () => {
+    expect(() => readConfig({ APP_ENV: 'staging' })).toThrow(
+      /DATABASE_URL manquante en staging/,
+    );
+  });
+
+  it('garde le défaut localhost en local', () => {
+    expect(readConfig({}).databaseUrl).toBe(
+      'postgres://taskflow:taskflow@localhost:5432/taskflow',
+    );
+  });
+
   it("lit les variables d'environnement fournies", () => {
     const config = readConfig({
       PORT: '4000',
