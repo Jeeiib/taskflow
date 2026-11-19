@@ -7,7 +7,7 @@ supervision, sécurité.
 | Partie | Technologie | Port |
 | --- | --- | --- |
 | `front/` | Vite + JavaScript sans framework, servi par **Nginx** dans son image | 5173 en dev (Vite), 80 dans le conteneur |
-| `api/` | Node 20 + Express + `pg` | 3000 |
+| `api/` | Node 26 + Express + `pg` | 3000 |
 | base | PostgreSQL 16 (table `tasks`, créée au démarrage de l'API) | 5432 |
 
 ## Structure
@@ -19,7 +19,7 @@ taskflow/
 │   │   └── repositories/    memory.js (tests, sans base) et postgres.js (réel)
 │   ├── tests/               *.test.js (unitaires), db.int.test.js (intégration, base requise)
 │   ├── vitest.config.js     configuration des tests et de la couverture
-│   ├── Dockerfile           image de l'API (node:20-alpine, USER node, HEALTHCHECK)
+│   ├── Dockerfile           image de l'API (node:26-alpine, USER node, HEALTHCHECK)
 │   └── .env.example         variables d'environnement documentées
 ├── front/
 │   ├── index.html, src/     interface (main.js) et client HTTP (api.js)

@@ -4,9 +4,9 @@
 # crée une couche (layer) qui est mise en cache par Docker.
 # ============================================================================
 
-# Image de base : Node 20 sur Alpine Linux (une distribution minuscule, ~50 Mo).
-# On fixe la version majeure (20) pour que le build reste reproductible.
-FROM node:20-alpine
+# Image de base : Node 26 sur Alpine Linux (une distribution minuscule, ~50 Mo).
+# On fixe la version majeure (26) pour que le build reste reproductible.
+FROM node:26-alpine
 
 # Dossier de travail dans l'image. Les commandes suivantes s'exécutent ici.
 WORKDIR /app
