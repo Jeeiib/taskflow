@@ -4,11 +4,10 @@
 
 ### 1. Le mot de passe dans le state
 
-Il y est, en clair : `grep POSTGRES_PASSWORD ~/taskflow-staging/terraform.tfstate` le trouve dans l'`env` du conteneur
-`db` (et aussi dans la `DATABASE_URL` de l'API). Le `sensitive = true` le masque à l'affichage du plan, pas dans le
-state. Donc le state, c'est un secret à part entière : jamais dans Git (d'où le `.gitignore` et le backend dont le
-chemin est donné à l'`init`), et des droits serrés sur le fichier. Le mien était en 644 après l'apply, je l'ai passé en
-600. En équipe, il irait dans un backend distant chiffré avec des accès restreints.
+Il y est, en clair. `grep POSTGRES_PASSWORD` le trouve dans l'`env` du conteneur `db`, et il est aussi dans la
+`DATABASE_URL` de l'API. Le `sensitive = true` le cache seulement à l'affichage, pas dans le state. Donc le state il faut
+le traiter comme un secret : jamais dans Git, et des droits serrés. Le mien était en 644 après l'apply, je l'ai passé en
+600. En équipe je le mettrais dans un backend distant chiffré, avec peu de gens qui y ont accès.
 
 ### 2. Pourquoi `tofu import` plutôt qu'un volume neuf ?
 
@@ -31,10 +30,11 @@ en 502. Même chose pour `db`, que l'API attend dans sa `DATABASE_URL`.
 
 ### 4. Qu'apporte Tofu par rapport à Compose ? Qu'est-ce qu'on perd ?
 
-Ce qu'on gagne : un **plan** avant chaque changement (on voit `-/+` ou `destroy` avant que ça arrive, ce que Compose ne
-montre jamais), un **state** qui permet de détecter la dérive, des variables validées, et surtout un outil qui sait
-gérer bien plus que des conteneurs (DNS, cloud, bases managées...) avec le même workflow.
+Le gros plus pour moi c'est le plan : on voit ce qui va être détruit avant que ça arrive, Compose ne te dit jamais
+« attention je vais recréer ta base ». Il y a aussi le state, qui permet de repérer une dérive, et les variables
+validées. Et Tofu sait gérer plein d'autres choses que des conteneurs (DNS, cloud, bases managées), avec la même façon
+de travailler.
 
-Ce qu'on perd : la simplicité. Un `compose.staging.yaml` de 60 lignes devient 5 fichiers, il faut gérer un state (et
-le protéger), et des trucs automatiques avec Compose deviennent manuels (les alias DNS, les healthchecks à répéter pour
-le `wait`). Et pour le dev en local, Compose reste bien plus pratique.
+Ce qu'on perd, c'est la simplicité. Le compose de 60 lignes devient 5 fichiers, il faut gérer un state et le protéger,
+et des trucs que Compose faisait tout seul deviennent à ma charge (les alias DNS, les healthchecks à réécrire pour le
+`wait`). Pour le dev en local, je garderais Compose sans hésiter.
