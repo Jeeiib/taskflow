@@ -154,33 +154,69 @@ jobs:
     permissions:
       contents: read
       packages: read
+    defaults:
+      run:
+        working-directory: infra
     env:
       TAG: ${{ needs.prepare.outputs.tag }}
       FRONT_PORT: ${{ vars.FRONT_PORT || '8081' }}
+      TF_IN_AUTOMATION: "1"
+      TF_INPUT: "0"
+      TF_PLUGIN_CACHE_DIR: ${{ github.workspace }}/../.tofu-plugin-cache
+      TF_VAR_front_port: ${{ vars.FRONT_PORT || '8081' }}
+      TF_VAR_ghcr_username: ${{ github.actor }}
+      TF_VAR_ghcr_token: ${{ secrets.GITHUB_TOKEN }}
     steps:
+      - name: Vérifier le runner
+        working-directory: .
+        run: |
+          if [ -z "${STAGING_DIR:-}" ] || [ ! -d "$STAGING_DIR" ]; then
+            echo "::error::STAGING_DIR absent sur le runner"; exit 1
+          fi
+          mkdir -p "$TF_PLUGIN_CACHE_DIR"
+          tofu version
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
-      - name: Copier la configuration dans le dossier du staging
+      - name: tofu init (state dans STAGING_DIR)
+        run: tofu init -lockfile=readonly -backend-config="path=$STAGING_DIR/terraform.tfstate"
+
+      - name: Variables OpenTofu
+        run: ./ci-env.sh "$TAG"
+
+      # Sans effet une fois le staging migré : conteneurs Compose supprimés, volume importé.
+      - name: Migrer depuis le staging Compose (si présent)
         run: |
-          [ -f "$STAGING_DIR/.env" ] || { echo "::error::STAGING_DIR absent ou sans .env"; exit 1; }
-          cp compose.staging.yaml deploy/deploy.sh deploy/smoke-test.sh deploy/backup.sh "$STAGING_DIR/"
+          ids="$(docker ps -aq --filter label=com.docker.compose.project=taskflow-staging)"
+          if [ -n "$ids" ]; then
+            echo "Staging Compose détecté : suppression des conteneurs et du réseau (volume conservé)"
+            # shellcheck disable=SC2086
+            docker rm -f $ids
+            docker network rm taskflow-staging
+          fi
+          if ! tofu state list 2>/dev/null | grep -qx 'docker_volume.pgdata' \
+             && docker volume inspect taskflow-staging-pgdata >/dev/null 2>&1; then
+            tofu import -lock-timeout=120s docker_volume.pgdata taskflow-staging-pgdata
+          fi
 
-      - name: Connexion à ghcr.io
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "$GH_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: tofu plan
+        run: tofu plan -no-color -lock-timeout=120s -out=tfplan
 
-      - name: Déployer
-        run: cd "$STAGING_DIR" && COMPOSE_FILE=compose.staging.yaml ./deploy.sh "$TAG"
+      # On applique le plan affiché juste au-dessus, pas un nouveau calcul.
+      - name: tofu apply
+        run: |
+          tofu apply -no-color -lock-timeout=120s tfplan
+          rm -f tfplan
 
       - name: Smoke test (avec la version attendue)
-        run: '"$STAGING_DIR/smoke-test.sh" "http://host.docker.internal:$FRONT_PORT/health" "$TAG"'
+        working-directory: .
+        run: ./deploy/smoke-test.sh "http://host.docker.internal:${FRONT_PORT}/health" "$TAG"
 
-      - name: Déconnexion de ghcr.io
+      - name: Nettoyer
         if: always()
-        run: docker logout ghcr.io
+        run: rm -f tfplan
 
   deploy-production:
     name: deploy-production
