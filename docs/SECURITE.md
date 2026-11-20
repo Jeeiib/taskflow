@@ -76,6 +76,12 @@ Re-scan ZAP après correction : `FAIL-NEW: 0`, `WARN-NEW: 0`, 66 règles passée
 
 HSTS n'est pas posé ici : ce Nginx parle HTTP sur le réseau interne. Il se pose sur le proxy HTTPS de la prod.
 
+Après le déploiement en prod, `curl -I https://taskflow.localhost/` montrait les nouveaux en-têtes, mais aussi
+`Server: nginx/1.29.8` : c'est le proxy HTTPS (`deploy/nginx/taskflow.conf`) qui répond en premier, et il n'avait pas
+`server_tokens off`. Je l'ai ajouté, avec `Strict-Transport-Security: max-age=31536000` (le navigateur refuse ensuite
+de repasser en HTTP pendant un an). Pas de `preload` ni d'`includeSubDomains` : c'est un domaine de lab, et un
+preload ne se retire pas facilement.
+
 ## 4. Registre des exceptions
 
 Chaque exception est étroite (une règle ou un chemin précis) et justifiée. Un vrai secret ne s'ajoute jamais ici :
