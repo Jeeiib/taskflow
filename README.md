@@ -1,5 +1,14 @@
 # TaskFlow
 
+> **Pour l'examinateur : mes réponses et mes rendus**
+>
+> | Étape | Fichier |
+> | --- | --- |
+> | Étape 2 : livraison continue | [`docs/reflexion-etape2.md`](docs/reflexion-etape2.md) |
+> | Étape 3 : infrastructure en code | [`docs/reflexion-etape3.md`](docs/reflexion-etape3.md) |
+> | Étape 4 : supervision et incident | [`docs/reflexion-etape4.md`](docs/reflexion-etape4.md) |
+> | Étape 4 : post-mortem de l'incident | [`docs/INCIDENTS.md`](docs/INCIDENTS.md) |
+
 Un gestionnaire de tâches volontairement simple : c'est le **fil rouge** de la formation DevOps. Le code applicatif est
 fourni et testé ; votre travail porte sur tout ce qui l'entoure : intégration continue, livraison, infrastructure,
 supervision, sécurité.
