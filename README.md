@@ -8,6 +8,8 @@
 > | Étape 3 : infrastructure en code | [`docs/reflexion-etape3.md`](docs/reflexion-etape3.md) |
 > | Étape 4 : supervision et incident | [`docs/reflexion-etape4.md`](docs/reflexion-etape4.md) |
 > | Étape 4 : post-mortem de l'incident | [`docs/INCIDENTS.md`](docs/INCIDENTS.md) |
+> | Étape 5 : DevSecOps | [`docs/reflexion-etape5.md`](docs/reflexion-etape5.md) |
+> | Étape 5 : triage, en-têtes et exceptions | [`docs/SECURITE.md`](docs/SECURITE.md) |
 
 Un gestionnaire de tâches volontairement simple : c'est le **fil rouge** de la formation DevOps. Le code applicatif est
 fourni et testé ; votre travail porte sur tout ce qui l'entoure : intégration continue, livraison, infrastructure,
