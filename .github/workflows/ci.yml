@@ -26,7 +26,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node: [20, 22]
+        node: [22, 24]
     defaults:
       run:
         working-directory: api
@@ -94,10 +94,10 @@ jobs:
     steps:
       - name: Récupérer le code
         uses: actions/checkout@v7
-      - name: Installer Node 20
+      - name: Installer Node 24
         uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           cache-dependency-path: api/package-lock.json
       - name: Installer les dépendances
